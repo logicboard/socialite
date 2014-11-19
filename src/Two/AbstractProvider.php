@@ -89,9 +89,11 @@ abstract class AbstractProvider implements ProviderContract {
 	 */
 	public function redirect()
 	{
+
 		$this->request->getSession()->set(
 			'state', $state = sha1(time().$this->request->getSession()->get('_token'))
 		);
+
 
 		return new RedirectResponse($this->getAuthUrl($state));
 	}
@@ -109,7 +111,8 @@ abstract class AbstractProvider implements ProviderContract {
 
 		return $url.'?'.http_build_query([
 			'client_id' => $this->clientId, 'redirect_uri' => $this->redirectUrl,
-			'scope' => $this->formatScopes($this->scopes), 'state' => $state,
+			'scope' => $this->scopes ? $this->formatScopes($this->scopes) : null,
+			'state' => $state,
 			'response_type' => 'code',
 		]);
 	}

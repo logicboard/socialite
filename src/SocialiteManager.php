@@ -4,8 +4,10 @@ use Illuminate\Support\Manager;
 use Laravel\Socialite\Two\GithubProvider;
 use Laravel\Socialite\Two\GoogleProvider;
 use Laravel\Socialite\One\TwitterProvider;
+use Laravel\Socialite\One\FitbitProvider;
 use Laravel\Socialite\Two\FacebookProvider;
 use League\OAuth1\Client\Server\Twitter as TwitterServer;
+use Laravel\Socialite\One\Server\Fitbit as FitbitServer;
 use Laravel\Socialite\One\AbstractProvider as AbstractOneProvider;
 use Laravel\Socialite\Two\AbstractProvider as AbstractTwoProvider;
 
@@ -66,6 +68,66 @@ class SocialiteManager extends Manager implements Contracts\Factory {
 	}
 
 	/**
+	 * Create an instance of the specified driver.
+	 *
+	 * @return \Laravel\Socialite\Two\AbstractProvider
+	 */
+	protected function createRunkeeperDriver()
+	{
+		$config = $this->app['config']['services.runkeeper'];
+
+		return $this->buildProvider(
+			'Laravel\Socialite\Two\RunkeeperProvider', $config
+		);
+
+	}
+
+	/**
+	 * Create an instance of the specified driver.
+	 *
+	 * @return \Laravel\Socialite\Two\AbstractProvider
+	 */
+	protected function createMovesDriver()
+	{
+		$config = $this->app['config']['services.moves'];
+
+		return $this->buildProvider(
+			'Laravel\Socialite\Two\MovesProvider', $config
+		);
+
+	}
+
+	/**
+	 * Create an instance of the specified driver.
+	 *
+	 * @return \Laravel\Socialite\Two\AbstractProvider
+	 */
+	protected function createMapmyfitnessDriver()
+	{
+		$config = $this->app['config']['services.mapmyfitness'];
+
+		return $this->buildProvider(
+			'Laravel\Socialite\Two\MapmyfitnessProvider', $config
+		);
+
+	}
+
+	/**
+	 * Create an instance of the specified driver.
+	 *
+	 * @return \Laravel\Socialite\Two\AbstractProvider
+	 */
+	protected function createStravaDriver()
+	{
+		$config = $this->app['config']['services.strava'];
+
+		return $this->buildProvider(
+			'Laravel\Socialite\Two\StravaProvider', $config
+		);
+
+	}
+
+	/**
 	 * Build an OAuth 2 provider instance.
 	 *
 	 * @param  string  $provider
@@ -80,6 +142,8 @@ class SocialiteManager extends Manager implements Contracts\Factory {
 		);
 	}
 
+
+
 	/**
 	 * Create an instance of the specified driver.
 	 *
@@ -91,6 +155,20 @@ class SocialiteManager extends Manager implements Contracts\Factory {
 
 		return new TwitterProvider(
 			$this->app['request'], new TwitterServer($this->formatConfig($config))
+		);
+	}
+
+	/**
+	 * Create an instance of the specified driver.
+	 *
+	 * @return \Laravel\Socialite\One\AbstractProvider
+	 */
+	protected function createFitbitDriver()
+	{
+		$config = $this->app['config']['services.fitbit'];
+
+		return new FitbitProvider(
+			$this->app['request'], new FitbitServer($this->formatConfig($config))
 		);
 	}
 
