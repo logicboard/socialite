@@ -2,6 +2,7 @@
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
+
 class JawboneProvider extends AbstractProvider implements ProviderInterface {
 
 	/**
@@ -35,6 +36,7 @@ class JawboneProvider extends AbstractProvider implements ProviderInterface {
 	 */
 	public function getAccessToken($code)
 	{
+
 		$response = $this->getHttpClient()->post($this->getTokenUrl(), [
 			'body' => $this->getTokenFields($code),
 		]);
@@ -56,11 +58,13 @@ class JawboneProvider extends AbstractProvider implements ProviderInterface {
 	}
 
 
+
 	/**
 	 * {@inheritdoc}
 	 */
 	protected function getUserByToken($token)
 	{
+
 		$response = $this->getHttpClient()->get('https://jawbone.com/nudge/api/v.1.1/users/@me', [
 			'headers' => [
 				'Accept' => 'application/json',
@@ -86,6 +90,7 @@ class JawboneProvider extends AbstractProvider implements ProviderInterface {
 			'first' => $data['first'],
 			'last' => $data['last'],
 			'avatar' => $data['image'],
+
 		]);
 	}
 

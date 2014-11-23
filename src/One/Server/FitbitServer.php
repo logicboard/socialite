@@ -38,6 +38,7 @@ class Fitbit extends Server
      */
     public function urlUserDetails()
     {
+
         return 'https://api.fitbit.com/1/user/-/profile.json';
     }
 
@@ -57,6 +58,7 @@ class Fitbit extends Server
         $user->imageUrl = $uData['avatar150'];
 
         $used = array('encodedId', 'displayName', 'fullName', 'avatar150');
+
 
         foreach ($data as $key => $value) {
             if (strpos($key, 'url') !== false) {
@@ -80,7 +82,7 @@ class Fitbit extends Server
      */
     public function userUid($data, TokenCredentials $tokenCredentials)
     {
-        return $data['uid'];
+        return $data['uid'];      
     }
 
     /**

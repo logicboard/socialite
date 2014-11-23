@@ -44,6 +44,7 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 	  	'body' => $tokenData
 	  	]);
 
+
 		return $this->parseAccessToken($response->getBody());
 	}
 
@@ -90,6 +91,7 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 			'name' => isset($user['first_name']) && isset($user['last_name']) ? $user['first_name'] . ' ' . $user['last_name'] : null,
 			'email' => isset($user['email']) ? $user['email'] : null,
 			'avatar' => ''
+
 		]);
 	}
 

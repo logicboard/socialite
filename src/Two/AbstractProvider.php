@@ -148,7 +148,9 @@ abstract class AbstractProvider implements ProviderContract {
 			$token = $this->getAccessToken($this->getCode())
 		));
 
+
 		return $user->setAccessTokenResponse($this->accessTokenResponse);
+
 	}
 
 	/**
@@ -201,9 +203,8 @@ abstract class AbstractProvider implements ProviderContract {
 	 */
 	protected function parseAccessToken($body)
 	{
-		$this->setAccessTokenResponse(json_decode($body, true));
-		var_dump($this->accessTokenResponse);
 
+		$this->setAccessTokenResponse(json_decode($body, true));
 		return $this->accessTokenResponse['access_token'];
 	}
 
@@ -253,6 +254,7 @@ abstract class AbstractProvider implements ProviderContract {
 		return $this;
 	}
 
+
 	/**
 	 * Set the access token response instance.
 	 *
@@ -265,7 +267,5 @@ abstract class AbstractProvider implements ProviderContract {
 
 		return $this;
 	}
-
-
 
 }

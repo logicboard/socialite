@@ -79,6 +79,7 @@ class MovesProvider extends AbstractProvider implements ProviderInterface {
 			'name' => null,
 			'email' => null,
 			'avatar' => null,
+
 		]);
 	}
 

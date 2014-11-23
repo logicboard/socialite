@@ -11,6 +11,7 @@ class RunkeeperProvider extends AbstractProvider implements ProviderInterface {
 	 */
 	protected $scopes = [];
 
+
 	/**
 	 * {@inheritdoc}
 	 */
@@ -26,7 +27,6 @@ class RunkeeperProvider extends AbstractProvider implements ProviderInterface {
 	{
 		return 'https://runkeeper.com/apps/token';
 	}
-
 
 
 	/**

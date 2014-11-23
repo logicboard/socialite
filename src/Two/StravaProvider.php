@@ -9,6 +9,7 @@ class StravaProvider extends AbstractProvider implements ProviderInterface {
 	 *
 	 * @var array
 	 */
+
 	protected $scopes = [];
 
 	/**
@@ -27,7 +28,7 @@ class StravaProvider extends AbstractProvider implements ProviderInterface {
 		return 'https://www.strava.com/oauth/token';
 	}
 
-	/**
+	/*
 	 * {@inheritdoc}
 	 */
 	protected function getUserByToken($token)
@@ -36,6 +37,7 @@ class StravaProvider extends AbstractProvider implements ProviderInterface {
 			'headers' => [
 				'Accept' => 'application/json',
 				'authorization' => 'Bearer ' . $token
+
 			],
 		]);
 
@@ -66,6 +68,7 @@ class StravaProvider extends AbstractProvider implements ProviderInterface {
 			'name' => $user['firstname'].' '.$user['lastname'],
 			'email' => $user['email'], 
 			'avatar' => $user['profile'],
+
 		]);
 	}
 

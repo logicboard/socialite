@@ -39,9 +39,6 @@ class FacebookProvider extends AbstractProvider implements ProviderInterface {
 			'query' => $this->getTokenFields($code),
 		]);
 
-		var_dump($response);
-		var_dump($response->getBody());
-
 		return $this->parseAccessToken($response->getBody());
 	}
 
@@ -51,9 +48,6 @@ class FacebookProvider extends AbstractProvider implements ProviderInterface {
 	protected function parseAccessToken($body)
 	{
 		parse_str($body);
-
-		print_r($body);
-
 		return $access_token;
 	}
 
