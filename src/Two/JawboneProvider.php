@@ -75,6 +75,28 @@ class JawboneProvider extends AbstractProvider implements ProviderInterface {
 		return json_decode($response->getBody(), true);
 	}
 
+
+
+	public function getUserMoves($token, $options=array())
+	{
+
+		//$headers = [
+				//'Content-Type' => 'application/x-www-form-urlencoded'
+			//];
+
+		$paramsString = http_build_query($options);
+		$endPoint = 'https://jawbone.com/nudge/api/v.1.1/users/@me/moves?'.$paramsString;
+		$response = $this->getHttpClient()->get($endPoint, [
+			'headers' => [
+				'Accept' => 'application/json',
+				'Authorization' => 'Bearer ' . $token
+			],
+		]);
+
+		return json_decode($response->getBody());
+
+	}
+
 	/**
 	 * {@inheritdoc}
 	 */
