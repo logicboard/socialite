@@ -68,7 +68,7 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 	protected function getUserByToken($token)
 	{
 
-		$response = $this->getHttpClient()->get('https://oauth2-api.mapmyapi.com/v7.0/user/self', [
+		$response = $this->getHttpClient()->get('https://oauth2-api.mapmyapi.com/v7.0/user/self/', [
 			'headers' => [
 				'Api-Key' => $this->clientId,
 				'authorization' => 'Bearer ' . $token
@@ -77,6 +77,51 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 
 
 		return json_decode($response->getBody(), true);
+	}
+
+
+	public function getFitnessActivities($token, $options=array())
+	{
+
+		$headers = [
+				'Api-Key' => $this->clientId,
+				'authorization' => 'Bearer ' . $token,
+				'Content-Type' => 'application/x-www-form-urlencoded'
+			];
+
+		$paramsString = http_build_query($options);
+
+		var_dump($paramsString);
+
+		$response = $this->getHttpClient()->get('https://oauth2-api.mapmyapi.com/v7.0/workout/?'.$paramsString, [
+			'headers' => $headers
+		]);
+
+		$data = json_decode($response->getBody());
+
+		return $data;
+	}
+
+
+	public function getActivityType($token, $options=array())
+	{
+		$headers = [
+				'Api-Key' => $this->clientId,
+				'authorization' => 'Bearer ' . $token,
+				'Content-Type' => 'application/x-www-form-urlencoded'
+			];
+
+		$paramsString = http_build_query($options);
+
+		$activityId = isset($options['activityId']) ? $options['activityId'] : '';
+		$response = $this->getHttpClient()->get('https://oauth2-api.mapmyapi.com/v7.0/activity_type/'.$activityId, [
+			'headers' => $headers
+		]);
+
+		$data = json_decode($response->getBody());
+
+		return $data;
+
 	}
 
 	/**
