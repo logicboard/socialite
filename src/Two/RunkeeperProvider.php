@@ -50,6 +50,26 @@ class RunkeeperProvider extends AbstractProvider implements ProviderInterface {
 		return $data;
 	}
 
+
+	public function getFitnessActivities($token, $options=array())
+	{
+
+		$headers = [
+				//'authorization' => 'Bearer ' . $token,
+				'Content-Type' => 'application/x-www-form-urlencoded'
+			];
+
+		$paramsString = http_build_query($options);
+		$endPoint = 'https://api.runkeeper.com/fitnessActivities?access_token='.$token.'&'.$paramsString;
+		$response = $this->getHttpClient()->get($endPoint, [
+			'headers' => $headers
+		]);
+
+		return json_decode($response->getBody());
+
+	}
+
+
 	/**
 	 * Get the POST fields for the token request.
 	 *
