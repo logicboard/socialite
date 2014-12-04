@@ -38,8 +38,12 @@ class Fitbit extends Server
      */
     public function urlUserDetails()
     {
-
         return 'https://api.fitbit.com/1/user/-/profile.json';
+    }
+
+    public function urlUserActivities($userId, $dateStr)
+    {
+        return 'https://api.fitbit.com/1/user/'. $userId .'/activities/date/' . $dateStr.'.json';
     }
 
     /**
@@ -75,6 +79,35 @@ class Fitbit extends Server
         $user->extra = array_diff_key($data, array_flip($used));
 
         return $user;
+    }
+
+    public function getUserActivities($tokenCredentials, $userId, $activityDate)
+    {
+
+        $url = $this->urlUserActivities($userId, $activityDate);
+        $client = $this->createHttpClient();
+
+            try {
+                $response = $client->get($url, array(
+                    'Authorization' => $this->protocolHeader('GET', $url, $tokenCredentials),
+                ))->send();
+            } catch (BadResponseException $e) {
+                $response = $e->getResponse();
+                $body = $response->getBody();
+                $statusCode = $response->getStatusCode();
+
+                throw new \Exception(
+                    "Received error [$body] with status code [$statusCode] when retrieving token credentials."
+                );
+            }
+
+        return json_decode($response->getBody());
+
+    }
+
+    public function createCredentials(array $clientCredentials)
+    {
+        return $this->createClientCredentials($clientCredentials);
     }
 
     /**
