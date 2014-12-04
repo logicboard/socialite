@@ -53,6 +53,27 @@ class MovesProvider extends AbstractProvider implements ProviderInterface {
 		return json_decode($response->getBody(), true);
 	}
 
+
+	public function getSummaries($token, $options=array())
+	{
+
+		//$headers = [
+				//'Content-Type' => 'application/x-www-form-urlencoded'
+			//];
+
+		$date = $options['date'];
+		$endPoint = 'https://api.moves-app.com/api/1.1/user/summary/daily/'.$date.'?access_token='.$token;
+		$response = $this->getHttpClient()->get($endPoint, [
+			//'headers' => $headers
+		]);
+
+		return json_decode($response->getBody());
+
+	}
+
+
+
+
 	/**
 	 * Get the POST fields for the token request.
 	 *
