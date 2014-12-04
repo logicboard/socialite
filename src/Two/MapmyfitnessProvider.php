@@ -88,18 +88,13 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 				'authorization' => 'Bearer ' . $token,
 				'Content-Type' => 'application/x-www-form-urlencoded'
 			];
-
 		$paramsString = http_build_query($options);
-
-		var_dump($paramsString);
-
 		$response = $this->getHttpClient()->get('https://oauth2-api.mapmyapi.com/v7.0/workout/?'.$paramsString, [
 			'headers' => $headers
 		]);
 
-		$data = json_decode($response->getBody());
+		return json_decode($response->getBody());
 
-		return $data;
 	}
 
 
@@ -118,9 +113,8 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 			'headers' => $headers
 		]);
 
-		$data = json_decode($response->getBody());
+		return json_decode($response->getBody());
 
-		return $data;
 
 	}
 
