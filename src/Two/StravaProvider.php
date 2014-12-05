@@ -44,6 +44,23 @@ class StravaProvider extends AbstractProvider implements ProviderInterface {
 		return json_decode($response->getBody(), true);
 	}
 
+	public function getFitnessActivities($token, $options=array())
+	{
+
+		$paramsString = http_build_query($options);
+		$endPoint = 'https://www.strava.com/api/v3/activities?'.$paramsString;
+		$response = $this->getHttpClient()->get($endPoint, [
+			'headers' => [
+				'Accept' => 'application/json',
+				'authorization' => 'Bearer ' . $token
+
+			],
+		]);
+
+		return json_decode($response->getBody());
+
+	}
+
 	/**
 	 * Get the POST fields for the token request.
 	 *
