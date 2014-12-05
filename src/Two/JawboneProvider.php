@@ -12,6 +12,12 @@ class JawboneProvider extends AbstractProvider implements ProviderInterface {
 	 */
 	protected $scopes = ['basic_read', 'extended_read', 'move_read'];
 
+
+	protected function formatScopes(array $scopes)
+	{
+		return implode(' ', $scopes);
+	}
+
 	/**
 	 * {@inheritdoc}
 	 */
@@ -79,10 +85,6 @@ class JawboneProvider extends AbstractProvider implements ProviderInterface {
 
 	public function getUserMoves($token, $options=array())
 	{
-
-		//$headers = [
-				//'Content-Type' => 'application/x-www-form-urlencoded'
-			//];
 
 		$paramsString = http_build_query($options);
 		$endPoint = 'https://jawbone.com/nudge/api/v.1.1/users/@me/moves?'.$paramsString;
