@@ -57,9 +57,9 @@ class Fitbit extends Server
         $uData = $data['user'];
 
         $user->uid = $uData['encodedId'];
-        $user->nickname = $uData['displayName'];
-        $user->name = $uData['fullName'];
-        $user->imageUrl = $uData['avatar150'];
+        $user->nickname = isset($uData['displayName']) ? $uData['displayName'] : '';
+        $user->name = isset($uData['fullName']) ? $uData['fullName'] : '';
+        $user->imageUrl = isset($uData['avatar150']) ? $uData['avatar150'] : '';
 
         $used = array('encodedId', 'displayName', 'fullName', 'avatar150');
 
