@@ -88,6 +88,20 @@ abstract class AbstractProvider implements ProviderContract {
 	 */
 	abstract protected function mapUserToObject(array $user);
 
+
+	public function refreshToken($code)
+  {
+
+		$response = $this->getHttpClient()->post($this->getTokenUrl(), [
+			'headers' => ['Accept' => 'application/json'],
+			'body' => $this->getRefreshTokenFields($code),
+		]);
+
+		return json_decode($response->getBody());
+
+
+  }
+
 	/**
 	 * Redirect the user of the application to the provider's authentication screen.
 	 *
@@ -194,6 +208,17 @@ abstract class AbstractProvider implements ProviderContract {
 			'code' => $code, 'redirect_uri' => $this->redirectUrl
 		];
 	}
+
+	protected function getRefreshTokenFields($code)
+	{
+		return [
+			'grant_type' => 'refresh_token',
+			'client_id' => $this->clientId, 
+			'client_secret' => $this->clientSecret,
+			'refresh_token' => $code
+		];
+	}
+
 
 	/**
 	 * Get the access token from the token response body.

@@ -48,6 +48,18 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 		return $this->parseAccessToken($response->getBody());
 	}
 
+	public function refreshToken($code)
+  {
+
+	  $headers = ['Api-Key' => $this->clientId, 'Accept' => 'application/json'];
+		$response = $this->getHttpClient()->post($this->getTokenUrl(), [
+			'headers' => $headers,
+			'body' => $this->getRefreshTokenFields($code),
+		]);
+
+		return json_decode($response->getBody());
+  }
+
 	/**
 	 * Get the POST fields for the token request.
 	 *
