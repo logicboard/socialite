@@ -97,6 +97,23 @@ class MapmyfitnessProvider extends AbstractProvider implements ProviderInterface
 
 	}
 
+	public function getActigraphy($token, $options=array())
+	{
+
+		$headers = [
+				'Api-Key' => $this->clientId,
+				'authorization' => 'Bearer ' . $token,
+				'Content-Type' => 'application/x-www-form-urlencoded'
+			];
+		$paramsString = http_build_query($options);
+		$response = $this->getHttpClient()->get('https://oauth2-api.mapmyapi.com/api/0.1/actigraphy/?'.$paramsString, [
+			'headers' => $headers
+		]);
+
+		return json_decode($response->getBody());
+
+	}
+
 
 	public function getActivityType($token, $options=array())
 	{
