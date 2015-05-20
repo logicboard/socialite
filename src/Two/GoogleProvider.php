@@ -10,8 +10,9 @@ class GoogleProvider extends AbstractProvider implements ProviderInterface {
 	 * @var array
 	 */
 	protected $scopes = [
-		'https://www.googleapis.com/auth/userinfo.email',
+		//'https://www.googleapis.com/auth/userinfo.email',
 		'https://www.googleapis.com/auth/userinfo.profile',
+	  'https://www.googleapis.com/auth/fitness.activity.read'
 	];
 
 	/**
@@ -83,6 +84,29 @@ class GoogleProvider extends AbstractProvider implements ProviderInterface {
 		return json_decode($response->getBody(), true);
 	}
 
+	public function getFitnessDataSources($token)
+	{
+		$response = $this->getHttpClient()->get('https://www.googleapis.com/fitness/v1/users/me/dataSources?access_token='.$token, [
+			'headers' => [
+				'Accept' => 'application/json',
+			],
+		]);
+
+		return json_decode($response->getBody());
+	}
+
+	public function getFitnessDatasets($token, $dataSourceId, $datasetId)
+	{
+		$response = $this->getHttpClient()->get('https://www.googleapis.com/fitness/v1/users/me/dataSources/'.$dataSourceId.'/datasets/'.$datasetId.'?access_token='.$token, [
+			'headers' => [
+				'Accept' => 'application/json',
+			],
+		]);
+
+		return json_decode($response->getBody());
+	}
+
+
 	/**
 	 * {@inheritdoc}
 	 */
@@ -90,7 +114,7 @@ class GoogleProvider extends AbstractProvider implements ProviderInterface {
 	{
 		return (new User)->setRaw($user)->map([
 			'id' => $user['id'], 'nickname' => null, 'name' => $user['given_name'].' '.$user['family_name'],
-			'email' => $user['email'], 'avatar' => array_get($user, 'picture'),
+			'email' => isset($user['email']) ? $user['email'] : '', 'avatar' => array_get($user, 'picture'),
 		]);
 	}
 
