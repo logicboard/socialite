@@ -20,7 +20,8 @@ class GoogleProvider extends AbstractProvider implements ProviderInterface {
 	 */
 	protected function getAuthUrl($state)
 	{
-		return $this->buildAuthUrlFromBase('https://accounts.google.com/o/oauth2/auth', $state);
+		$url = $this->buildAuthUrlFromBase('https://accounts.google.com/o/oauth2/auth', $state);
+		return $url;
 	}
 
 	/**
@@ -40,6 +41,11 @@ class GoogleProvider extends AbstractProvider implements ProviderInterface {
 	protected function getTokenUrl()
 	{
 		return 'https://accounts.google.com/o/oauth2/token';
+	}
+
+	protected function getRefreshTokenUrl()
+	{
+		return 'https://www.googleapis.com/oauth2/v3/token';
 	}
 
 	/**
@@ -117,5 +123,39 @@ class GoogleProvider extends AbstractProvider implements ProviderInterface {
 			'email' => isset($user['email']) ? $user['email'] : '', 'avatar' => array_get($user, 'picture'),
 		]);
 	}
+
+
+		/**
+	 * Get the authentication URL for the provider.
+	 *
+	 * @param  string  $url
+	 * @param  string  $state
+	 * @return string
+	 */
+	protected function buildAuthUrlFromBase($url, $state)
+	{
+		$session = $this->request->getSession();
+
+		return $url.'?'.http_build_query([
+			'client_id' => $this->clientId, 'redirect_uri' => $this->redirectUrl,
+			'scope' => $this->scopes ? $this->formatScopes($this->scopes) : null,
+			'state' => $state,
+			'response_type' => 'code',
+			'access_type' => 'offline',
+			'approval_prompt' => 'force', // force | auto
+		]);
+	}
+
+	public function refreshToken($code)
+  {
+
+	  $headers = [];
+		$response = $this->getHttpClient()->post($this->getTokenUrl(), [
+			'headers' => $headers,
+			'body' => $this->getRefreshTokenFields($code),
+		]);
+
+		return json_decode($response->getBody());
+  }
 
 }
