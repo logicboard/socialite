@@ -9,7 +9,7 @@ use Laravel\Socialite\One\GarminProvider;
 use Laravel\Socialite\Two\FacebookProvider;
 use League\OAuth1\Client\Server\Twitter as TwitterServer;
 use Laravel\Socialite\One\Server\Fitbit as FitbitServer;
-use Laravel\Socialite\One\Server\Garmin as GarminServer;
+use Laravel\Socialite\One\Server\GarminServer;
 use Laravel\Socialite\One\AbstractProvider as AbstractOneProvider;
 use Laravel\Socialite\Two\AbstractProvider as AbstractTwoProvider;
 

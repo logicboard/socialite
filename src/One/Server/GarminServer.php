@@ -3,37 +3,23 @@
 namespace Laravel\Socialite\One\Server;
 
 use League\OAuth1\Client\Server\Server;
-use League\OAuth1\Client\Credentials\TokenCredentials;
-use League\OAuth1\Client\Server\User;
-
 use League\OAuth1\Client\Credentials\CredentialsInterface;
-use League\OAuth1\Client\Signature\HmacSha1Signature;
-
-use GuzzleHttp\Message\Request;
+use League\OAuth1\Client\Credentials\TokenCredentials;
+use League\OAuth1\Client\Credentials\TemporaryCredentials;
+use League\OAuth1\Client\Credentials\CredentialsException;
+use League\OAuth1\Client\Credentials\ClientCredentials;
+use League\OAuth1\Client\Server\User;
+use Guzzle\Http\Exception\BadResponseException;
 
 use Carbon\Carbon;
 
 
 class GarminServer extends Server
 {
-
-    /**
-     * {@inheritDoc}
-     */
-    public function urlRequestToken()
-    {
-        return 'http://gcsapitest.garmin.com/gcs-api/oauth/request_token';
+    protected $test = false;
+    public function test($bool = true) {
+        $this->test = $bool;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function urlAccessToken()
-    {
-        return 'http://gcsapitest.garmin.com/gcs-api/oauth/access_token';
-    }
-
-
     /**
      * {@inheritDoc}
      */
@@ -41,7 +27,6 @@ class GarminServer extends Server
     {
         return 'http://connectapitest.garmin.com/oauth-service-1.0/oauth/request_token';
     }
-
     /**
      * {@inheritDoc}
      */
@@ -49,7 +34,6 @@ class GarminServer extends Server
     {
         return 'http://connecttest.garmin.com/oauthConfirm';
     }
-
     /**
      * {@inheritDoc}
      */
@@ -57,182 +41,49 @@ class GarminServer extends Server
     {
         return 'http://connectapitest.garmin.com/oauth-service-1.0/oauth/access_token';
     }
-
     /**
      * {@inheritDoc}
      */
     public function urlUserDetails()
     {
-        return null;
+        throw new \Exception("Garmin does not have a userDetails endpoint currently. Sorry...");
     }
-
-    public function urlUserActivities()
-    {
-        return 'http://gcsapitest.garmin.com/gcs-api/api/json';
-    }
-
-
-    protected function fetchUserDetails(TokenCredentials $tokenCredentials, $force = true)
-    {
-        return null;
-    }
-
     /**
      * {@inheritDoc}
      */
     public function userDetails($data, TokenCredentials $tokenCredentials)
     {
-
         $user = new User;
-
-        $uData = $data['user'];
-
-        $user->uid = $uData['encodedId'];
-        $user->nickname = isset($uData['displayName']) ? $uData['displayName'] : '';
-        $user->name = isset($uData['fullName']) ? $uData['fullName'] : '';
-        $user->imageUrl = isset($uData['avatar150']) ? $uData['avatar150'] : '';
-
-        $used = array('encodedId', 'displayName', 'fullName', 'avatar150');
-
-
-        if($data) {
-            foreach ($data as $key => $value) {
-                if (strpos($key, 'url') !== false) {
-
-                    if (!in_array($key, $used)) {
-                        $used[] = $key;
-                    }
-
-                    $user->urls[$key] = $value;
-                }
-            }
-
-            // Save all extra data
-            $user->extra = array_diff_key($data, array_flip($used));
-        }
-
         return $user;
     }
-
-
-
-    public function getUserActivities($tokenCredentials, $userId, $activityDate, $partnerCredentials)
-    {
-
-        $userAccessToken = $tokenCredentials->getIdentifier();
-        $userSecret = $tokenCredentials->getSecret();
-        echo 'userAccessToken = ' . $userAccessToken.'<br/>';
-        echo 'userSecret = ' . $userSecret.'<br/>';
-
-        $token = $partnerCredentials['token'];
-        $secret = $partnerCredentials['token_secret'];
-
-
-
-        //var_dump($tokenCredentials);
-        /// THIS IS THE PARTNER KEYS that needs to be refreshed every week.
-        //$tokenCredentials->setIdentifier($partnerCredentials['token']);
-        //$tokenCredentials->setSecret($partnerCredentials['token_secret']);
-
-        $partnerCredentials = $this->createClientCredentials(['identifier' => $partnerCredentials['token'],
-                                                              'secret' => $partnerCredentials['token_secret'] ]);
-
-        // oauth client creds
-        $configCreds = $this->getClientCredentials();
-        $clientToken = $configCreds->getIdentifier();
-
-
-        $url = $this->urlUserActivities();
-        $client = $this->createHttpClient();
-
-        $parameters = array_merge($this->baseProtocolParameters(), array(
-            'oauth_token' => $partnerCredentials->getIdentifier(),
-        ));
-
-        $clientToken = $parameters['oauth_consumer_key'];
-        $userAccessToken = $userAccessToken; //$tokenCredentials->getIdentifier();
-
-        $startTimeMS = Carbon::parse($activityDate)->timestamp * 1000;
-        $endTimeMS = Carbon::parse($activityDate)->endOfDay()->timestamp * 1000;
-
-        $ms = round(microtime(true) * 1000);
-        $activitySummaryRequest = [
-                                    'connectActivity' => true,
-                                    'wellnessDaily' => true,
-                                    //'wellnessMonitoring' => true,
-                                    'connectConsumerKey' => $clientToken,  //'66fd9551-aab2-4c79-96db-78d4775e009a'
-                                    'connectUserAccessToken' => $userAccessToken, //'962021c7-4a35-401c-8eaa-b0c67ab6d912'
-                                    'acknowledgeFlag' => false,
-                                    'beginStartTimeMillis' => $startTimeMS, //1431388839000,
-                                    'endStartTimeMillis' =>   $endTimeMS //1431471639000 //1426827600000 
-                                    ];
-
-
-        $postSummary = array('serviceRequests' =>
-                                array('WELLNESS' => 
-                                    array('activityRequests' =>
-                                        [array('GET_SUMMARIES' => [$activitySummaryRequest])] )));
-
-        
-
-  
-        $postBodyJson = json_encode($postSummary);
-        echo $postBodyJson;
-        //$postBodyJson = '{"serviceRequests":{"WELLNESS":{"activityRequests":[{"GET_ACTIVITY_SUMMARY":[{"activitySummaryRequest":{"consumerToken":"66fd9551-aab2-4c79-96db-78d4775e009a","userAccessToken":"fc84e072-aac0-4394-b8fa-b364ef08a42a","unacknowledgedOnly":false,"beginTimeMillis":1426525200000, "endTimeMillis":1426532400000, "acknowledgeFlag":false},"app":{"appId":"ID_6","version":1.0}}]}]}}}';
-
-        //$postBodyJson = '{"serviceRequests":{"WELLNESS":{"activityRequests":[{"GET_SUMMARIES":[{"connectActivity":true,"wellnessDaily":true,"wellnessMonitoring":true,"connectConsumerKey":"66fd9551-aab2-4c79-96db-78d4775e009a","connectUserAccessToken":"fc84e072-aac0-4394-b8fa-b364ef08a42a","acknowledgeFlag":false,"beginStartTimeMillis":1426532400000,"endStartTimeMillis":1426532400000}]}]}}}';
-        //echo "<br/><br/>" . $postBodyJson2;
-
-       //echo $postBodyJson;
-       //exit;
-
-        $request = $client->post($url, array(
-                    'Authorization' => $this->protocolHeader('POST', $url, $partnerCredentials),
-                ),
-                $postBodyJson);
-
-           $response = $client->post($url, array(
-                    'Authorization' => $this->protocolHeader('POST', $url, $partnerCredentials),
-                ),
-                $postBodyJson)->send();
-
-
-            try {
-                $response = $client->post($url, array(
-                    'Protocol' => 'JSON',
-                    'Authorization' => $this->protocolHeader('POST', $url, $partnerCredentials),
-                ),
-                $postBodyJson)->send();
-
-
-
-
-            } catch (BadResponseException $e) {
-
-
-
-                $response = $e->getResponse();
-                $body = $response->getBody();
-
-                $statusCode = $response->getStatusCode();
-
-                throw new \Exception(
-                    "Received error [$body] with status code [$statusCode] when retrieving token credentials."
-                );
-            }
-
-
-            $json = $response->getBody();
-            echo '<br/><br/>'.$json.'<br/><br/>';
-        return json_decode($response->getBody());
-
-    }
-
-
-
     /**
-     * @override for Garmin - needed the oauth_verifier in the headers params
-     *
+     * {@inheritDoc}
+     */
+    public function userUid($data, TokenCredentials $tokenCredentials)
+    {
+        return;
+    }
+    /**
+     * {@inheritDoc}
+     */
+    public function userEmail($data, TokenCredentials $tokenCredentials)
+    {
+        return;
+    }
+    /**
+     * {@inheritDoc}
+     */
+    public function userScreenName($data, TokenCredentials $tokenCredentials)
+    {
+        return;
+    }
+    /**
+     * Garmin doesn't have any public endpoints, so let's make sure we don't try this at home, kids
+     */
+    protected function fetchUserDetails(TokenCredentials $tokenCredentials, $force = true) {
+        return [];
+    }
+    /**
      * Generate the OAuth protocol header for requests other than temporary
      * credentials, based on the URI, method, given credentials & body query
      * string.
@@ -240,162 +91,135 @@ class GarminServer extends Server
      * @param  string  $method
      * @param  string  $uri
      * @param  CredentialsInterface  $credentials
-     * @param  array  $bodyParameters
+     * @param  array  $bodyCredentials
      * @return string
      */
     protected function protocolHeader($method, $uri, CredentialsInterface $credentials, array $bodyParameters = array())
     {
-
         $parameters = array_merge($this->baseProtocolParameters(), array(
             'oauth_token' => $credentials->getIdentifier(),
-            //'oauth_token' => '3c84757b-c693-4c3f-8fb8-90a66adc59f8',
         ));
-
         $this->signature->setCredentials($credentials);
-
-        $parameters['oauth_signature'] = $this->signature->sign(
-            $uri,
-            array_merge($parameters, $bodyParameters),
-            $method
-        );
-
-        //@garmin
-        $parameters = array_merge($parameters, $bodyParameters);
-
-
-
-        $normalizedParams = $this->normalizeProtocolParameters($parameters);
-
-        return $normalizedParams;
+        $parameters['oauth_signature'] = $this->signature->sign($uri, array_merge($parameters, $bodyParameters), $method);
+        if ( isset($bodyParameters['oauth_verifier']) ) {
+            $parameters['oauth_verifier'] =  $bodyParameters['oauth_verifier'];
+        }
+        return $this->normalizeProtocolParameters($parameters);
     }
 
     /**
-     * Any additional required protocol parameters for an
-     * OAuth request.
+     * Handle a bad response coming back when getting token credentials.
      *
-     * @return array
+     * @param  BadResponseException
+     * @return void
+     * @throws CredentialsException
      */
-    protected function additionalProtocolParameters()
+    protected function handleTokenCredentialsBadResponse(BadResponseException $e)
     {
-        return array('oauth_verifier');
+        $response = $e->getResponse();
+        $body = $response->getBody();
+        $statusCode = $response->getStatusCode();
+        $body->uncompress();
+        throw new CredentialsException("Received HTTP status code [$statusCode] with message \"$body\" when getting token credentials.");
+    }
+    
+    /**
+     * Get the authorization URL by passing in the temporary credentials
+     * identifier or an object instance.
+     *
+     * @param  TemporaryCredentials|string  $temporaryIdentifier
+     * @return string
+     */
+    public function getAuthorizationUrl($temporaryIdentifier)
+    {
+        // Somebody can pass through an instance of temporary
+        // credentials and we'll extract the identifier from there.
+        if ($temporaryIdentifier instanceof TemporaryCredentials) {
+            $temporaryIdentifier = $temporaryIdentifier->getIdentifier();
+        }
+        $parameters = array(
+            'oauth_token' => $temporaryIdentifier,
+            'oauth_callback' => $this->clientCredentials->getCallbackUri(),
+        );
+        return $this->urlAuthorization().'?'.http_build_query($parameters);
     }
 
-
-    public function createCredentials(array $clientCredentials)
-    {
-        return $this->createClientCredentials($clientCredentials);
-    }
+    /************************ added by tavo *******************************/
 
     /**
-     * {@inheritDoc}
+     * Creates a client credentials instance from an array of credentials.
+     *
+     * @param array $clientCredentials
+     *
+     * @return ClientCredentials
      */
-    public function userUid($data, TokenCredentials $tokenCredentials)
+    protected function createClientCredentials(array $clientCredentials)
     {
-        return $data['uid'];      
-    }
+        $keys = array('identifier', 'secret');
 
-    /**
-     * {@inheritDoc}
-     */
-    public function userEmail($data, TokenCredentials $tokenCredentials)
-    {
-        return null;
-    }
+        foreach ($keys as $key) {
+            if (!isset($clientCredentials[$key])) {
+                throw new \InvalidArgumentException("Missing client credentials key [$key] from options.");
+            }
+        }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function userScreenName($data, TokenCredentials $tokenCredentials)
-    {
-        return $data['nickname'];
-    }
+        $_clientCredentials = new ClientCredentials();
+        $_clientCredentials->setIdentifier($clientCredentials['identifier']);
+        $_clientCredentials->setSecret($clientCredentials['secret']);
 
+        if (isset($clientCredentials['callback_url'])) {
+            $_clientCredentials->setCallbackUri($clientCredentials['callback_url']);
+        }
+
+        return $_clientCredentials;
+    }
 
     /**
      * Gets temporary credentials by performing a request to
      * the server.
      *
-     * @return  TemporaryCredentials
+     * @return TemporaryCredentials
      */
-    public function getPartnerRequestToken()
+    public function getTemporaryCredentials()
     {
-        $uri = $this->urlRequestToken();
+        $uri = $this->urlTemporaryCredentials();
 
         $client = $this->createHttpClient();
 
-        $header = $this->temporaryPartnerRequestTokenProtocolHeader($uri);
-        $authorizationHeader = array('Authorization' => $header);
-        $headers = $this->buildHttpClientHeaders($authorizationHeader);
+        $header = $this->temporaryCredentialsProtocolHeader($uri);
+        //$authorizationHeader = array('Authorization' => $header);
+        $requestHeaders =  array(
+            'Authorization' => $header,
+            'Content-Type' => 'application/octet-stream',
+            'User-Agent' => 'Java/1.6.0_13'
+        );
 
-        //echo '<br/>'.$uri;
-        //var_dump($headers);
+
+        $headers = $this->buildHttpClientHeaders($requestHeaders);
 
         try {
             $response = $client->post($uri, $headers)->send();
+            //$response = $client->get($uri, $headers)->send();
         } catch (BadResponseException $e) {
             return $this->handleTemporaryCredentialsBadResponse($e);
         }
 
-        $body = $response->getBody();
-        //$resp = $this->createTemporaryCredentials($response->getBody());
-        parse_str($body, $data);
-        //echo "dump data";
-        //var_dump($data);
-
-        $oauth_token = $data['oauth_token'];
-        $oauth_token_secret = $data['oauth_token_secret'];
-        //echo 'DECODE<br/>';
-        //echo "oauth_token: " . $oauth_token.'<br/>';
-        //echo "oauth_secret" . $oauth_token_secret.'<br/>';
-
-
-
-        //////////////////////////////
-        $uri = $this->urlAccessToken();
-
-        $client = $this->createHttpClient();
-
-        $credentials = $this->createClientCredentials(['identifier' => $oauth_token, 'secret' => $oauth_token_secret]);
-
-        $header = $this->temporaryPartnerAccessTokenProtocolHeader($uri, $credentials);
-        $authorizationHeader = array('Authorization' => $header);
-        $headers = $this->buildHttpClientHeaders($authorizationHeader);
-
-        //echo '<br/>'.$uri;
-        //var_dump($headers);
-
-        try {
-            $response = $client->post($uri, $headers)->send();
-        } catch (BadResponseException $e) {
-            //var_dump($e);
-            //exit;
-            return $this->handleTemporaryCredentialsBadResponse($e);
-        }
-
-        $body = $response->getBody();
-        //$resp = $this->createTemporaryCredentials($response->getBody());
-        parse_str($body, $data);
-        $oauth_token = $data['oauth_token'];
-        $oauth_token_secret = $data['oauth_token_secret'];
-
-        //echo "final:<br/>";
-        //var_dump($data);
-        $resp = $data;
-
-        return $resp;
+        return $this->createTemporaryCredentials($response->getBody());
     }
+
 
     /**
      * Generate the OAuth protocol header for a temporary credentials
      * request, based on the URI.
      *
-     * @param  string  $uri
+     * @param string $uri
+     *
      * @return string
      */
-    protected function temporaryPartnerRequestTokenProtocolHeader($uri)
+    protected function temporaryCredentialsProtocolHeader($uri)
     {
         $parameters = array_merge($this->baseProtocolParameters(), array(
-            'oauth_token' => null,
+            'oauth_callback' => $this->clientCredentials->getCallbackUri(),
         ));
 
         $parameters['oauth_signature'] = $this->signature->sign($uri, $parameters, 'POST');
@@ -403,24 +227,41 @@ class GarminServer extends Server
         return $this->normalizeProtocolParameters($parameters);
     }
 
-    protected function temporaryPartnerAccessTokenProtocolHeader($uri, $clientCredentials)
+    /**
+     * Retrieves token credentials by passing in the temporary credentials,
+     * the temporary credentials identifier as passed back by the server
+     * and finally the verifier code.
+     *
+     * @param TemporaryCredentials $temporaryCredentials
+     * @param string               $temporaryIdentifier
+     * @param string               $verifier
+     *
+     * @return TokenCredentials
+     */
+    public function getTokenCredentials(TemporaryCredentials $temporaryCredentials, $temporaryIdentifier, $verifier)
     {
-        $parameters = array_merge($this->baseProtocolParameters(), array(
-            'oauth_token' => $clientCredentials->getIdentifier(),
-        ));
+        if ($temporaryIdentifier !== $temporaryCredentials->getIdentifier()) {
+            throw new \InvalidArgumentException(
+                'Temporary identifier passed back by server does not match that of stored temporary credentials.
+                Potential man-in-the-middle.'
+            );
+        }
 
+        $uri = $this->urlTokenCredentials();
+        $bodyParameters = array('oauth_verifier' => $verifier);
 
-        $signature = new HmacSha1Signature($clientCredentials);
-        //var_dump($clientCredentials);
-        //$parameters['oauth_signature'] = $signature->sign($uri, $parameters, 'POST');
-        $this->signature->setCredentials($clientCredentials);
-        $parameters['oauth_signature'] = $this->signature->sign($uri, $parameters, 'POST');
+        $client = $this->createHttpClient();
 
-        //echo "oauth_signature = " . $parameters['oauth_signature'];
-        //var_dump($parameters);
+        $headers = $this->getHeaders($temporaryCredentials, 'POST', $uri, $bodyParameters);
+        $headers['Content-Type'] = 'application/octet-stream';
+        $headers['User-Agent'] = 'Java/1.6.0_13';
 
-        return $this->normalizeProtocolParameters($parameters);
+        try {
+            $response = $client->post($uri, $headers, $bodyParameters)->send();
+        } catch (BadResponseException $e) {
+            return $this->handleTokenCredentialsBadResponse($e);
+        }
+
+        return $this->createTokenCredentials($response->getBody());
     }
-
-
 }
