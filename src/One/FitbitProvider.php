@@ -3,6 +3,7 @@
 class FitbitProvider extends AbstractProvider implements ProviderInterface {
 
     
+
 		public function createClientCredentials(array $clientCredentials)
     {
     	return $this->server->createCredentials($clientCredentials);
