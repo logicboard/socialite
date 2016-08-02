@@ -6,6 +6,8 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface {
 
 	/**
 	 * The scopes being requested.
+     *
+     * updated 1
 	 *
 	 * @var array
 	 */
