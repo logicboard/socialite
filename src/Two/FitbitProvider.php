@@ -13,7 +13,8 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface {
 	 */
 
 	protected $scopes = [
-        'profile'
+        'profile',
+        'activity'
     ];
 
 	/**

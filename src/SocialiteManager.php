@@ -4,11 +4,10 @@ use Illuminate\Support\Manager;
 use Laravel\Socialite\Two\GithubProvider;
 use Laravel\Socialite\Two\GoogleProvider;
 use Laravel\Socialite\One\TwitterProvider;
-use Laravel\Socialite\One\FitbitProvider;
+use Laravel\Socialite\Two\FitbitProvider;
 use Laravel\Socialite\One\GarminProvider;
 use Laravel\Socialite\Two\FacebookProvider;
 use League\OAuth1\Client\Server\Twitter as TwitterServer;
-use Laravel\Socialite\One\Server\Fitbit as FitbitServer;
 use Laravel\Socialite\One\Server\Garmin as GarminServer;
 use Laravel\Socialite\One\AbstractProvider as AbstractOneProvider;
 use Laravel\Socialite\Two\AbstractProvider as AbstractTwoProvider;
@@ -178,7 +177,7 @@ class SocialiteManager extends Manager implements Contracts\Factory {
 	/**
 	 * Create an instance of the specified driver.
 	 *
-	 * @return \Laravel\Socialite\One\AbstractProvider
+	 * @return \Laravel\Socialite\Two\AbstractProvider
 	 */
 	protected function createFitbitDriver()
 	{
