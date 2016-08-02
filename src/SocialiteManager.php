@@ -183,9 +183,9 @@ class SocialiteManager extends Manager implements Contracts\Factory {
 	{
 		$config = $this->app['config']['services.fitbit'];
 
-		return new FitbitProvider(
-			$this->app['request'], new FitbitServer($this->formatConfig($config))
-		);
+        return $this->buildProvider(
+            'Laravel\Socialite\Two\FitbitProvider', $config
+        );
 	}
 
  /**
