@@ -1,6 +1,8 @@
 <?php namespace Laravel\Socialite\Two;
 
+use App\Data\Models\UserApp;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Log;
 
 class FitbitProvider extends AbstractProvider implements ProviderInterface
 {
@@ -82,6 +84,8 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
     public function getFitnessActivities($token, $options = array())
     {
 
+        Log::info("getFitnessActivities() = " . $token);
+
         $paramsString = http_build_query($options);
         $endPoint = 'https://www.strava.com/api/v3/activities?'.$paramsString;
         $response = $this->getHttpClient()->get($endPoint, [
@@ -115,16 +119,23 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
 
     }
 
-    public function getUserActivities($tokenCredentials, $userId, $activityDate)
+    public function getUserActivities($tokenCredentials, $userId, $activityDate, $userApp)
     {
 
         $url = $this->urlUserActivities($userId, $activityDate);
         $client = $this->getHttpClient();
 
+        $token = "no-token";
+        if ($userApp){
+            $token = $userApp->token;
+        }
+
+//        Log::info("Fitbit Token = " . $token);
+
         try {
             $response = $client->get($url, [
-                'headers' => ['Accept' => 'application/json', 'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret)],
-            ])->send();
+                'headers' => ['Accept' => 'application/json', 'Authorization' => 'Bearer ' . $token],
+            ]);
         } catch (BadResponseException $e) {
             $response = $e->getResponse();
             $body = $response->getBody();
