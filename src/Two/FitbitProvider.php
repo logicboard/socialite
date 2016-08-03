@@ -204,6 +204,7 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
      */
     protected function getTokenFields($code)
     {
+        
 //        return array_add(
 //            parent::getTokenFields($code), 'grant_type', 'authorization_code'
 //        );
