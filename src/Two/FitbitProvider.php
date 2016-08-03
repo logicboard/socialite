@@ -28,7 +28,7 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
     /**
      * Format the given scopes.
      *
-     * @param  array  $scopes
+     * @param  array $scopes
      * @return string
      */
     protected function formatScopes(array $scopes)
@@ -52,10 +52,35 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
         return 'https://api.fitbit.com/oauth2/token';
     }
 
+    protected function getRefreshTokenUrl()
+    {
+        return 'https://api.fitbit.com/oauth2/token';
+    }
+
+    protected function getRefreshTokenFields($code)
+    {
+        return [
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $code,
+        ];
+    }
+
+    public function refreshToken($code)
+    {
+
+        $response = $this->getHttpClient()->post($this->getRefreshTokenUrl(), [
+            'headers' => ['Accept' => 'application/json', 'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret)],
+            'body' => $this->getRefreshTokenFields($code),
+        ]);
+
+        return json_decode($response->getBody());
+
+    }
+
     /**
      * Get the access token for the given code.
      *
-     * @param  string  $code
+     * @param  string $code
      * @return string
      */
     public function getAccessToken($code)
@@ -75,7 +100,7 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
     {
         $response = $this->getHttpClient()->get('https://api.fitbit.com/1/user/-/profile.json', [
             'headers' => [
-                'Authorization' => 'Bearer '.$token,
+                'Authorization' => 'Bearer ' . $token,
             ],
         ]);
         return json_decode($response->getBody(), true);
@@ -87,7 +112,7 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
         Log::info("getFitnessActivities() = " . $token);
 
         $paramsString = http_build_query($options);
-        $endPoint = 'https://www.strava.com/api/v3/activities?'.$paramsString;
+        $endPoint = 'https://www.strava.com/api/v3/activities?' . $paramsString;
         $response = $this->getHttpClient()->get($endPoint, [
             'headers' => [
                 'Accept' => 'application/json',
@@ -126,7 +151,7 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
         $client = $this->getHttpClient();
 
         $token = "no-token";
-        if ($userApp){
+        if ($userApp) {
             $token = $userApp->token;
         }
 
@@ -179,9 +204,13 @@ class FitbitProvider extends AbstractProvider implements ProviderInterface
      */
     protected function getTokenFields($code)
     {
-        return array_add(
-            parent::getTokenFields($code), 'grant_type', 'authorization_code'
-        );
+//        return array_add(
+//            parent::getTokenFields($code), 'grant_type', 'authorization_code'
+//        );
+        return array_merge(parent::getTokenFields($code), [
+            'grant_type' => 'authorization_code',
+            'expires_in' => '31536000',
+        ]);
     }
 
     /**
